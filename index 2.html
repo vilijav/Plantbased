@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PlantBased Pipeline</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    ::selection { background: #365314; color: #fff; }
+    body { background: #08090a; color: #e0e0e0; font-family: 'Instrument Sans', 'DM Sans', system-ui, sans-serif; min-height: 100vh; }
+
+    /* Layout */
+    .header { border-bottom: 1px solid #141517; padding: 16px 24px; }
+    .header-inner { max-width: 780px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+    .logo { display: flex; align-items: center; gap: 10px; }
+    .logo-icon { width: 32px; height: 32px; border-radius: 9px; background: linear-gradient(135deg, #365314, #4d7c0f); display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .logo-text { font-size: 15px; font-weight: 700; color: #f0f0f0; letter-spacing: -.02em; }
+    .logo-sub { font-size: 11px; color: #444; margin-top: 1px; }
+    .main { max-width: 780px; margin: 0 auto; padding: 28px 24px; }
+
+    /* Inputs */
+    .inp { background: #111214; border: 1px solid #1e2024; color: #e0e0e0; border-radius: 10px; padding: 11px 15px; font-size: 14px; width: 100%; outline: none; transition: border-color .2s, box-shadow .2s; font-family: inherit; }
+    .inp:focus { border-color: #3f6212; box-shadow: 0 0 0 3px #3f621218; }
+    .inp::placeholder { color: #444; }
+    .inp-pw { background: #111214; border: 1px solid #1e2024; color: #e0e0e0; border-radius: 10px; padding: 12px 15px; font-size: 14px; width: 100%; outline: none; font-family: inherit; }
+    select.inp { appearance: none; background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23555' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+
+    /* Buttons */
+    .btn-go { background: #3f6212; color: #d9f99d; border: none; padding: 11px 24px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .15s; font-family: inherit; white-space: nowrap; }
+    .btn-go:hover { background: #4d7c0f; transform: translateY(-1px); }
+    .btn-go:disabled { opacity: .35; cursor: not-allowed; transform: none; }
+    .btn-disc { background: #111214; color: #a3e635; border: 1px solid #1e2024; padding: 14px 24px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all .15s; font-family: inherit; white-space: nowrap; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-disc:hover { background: #151a0f; border-color: #3f6212; }
+    .btn-disc:disabled { opacity: .35; cursor: not-allowed; }
+    .btn-copy { background: #1a1a1a; color: #888; border: 1px solid #2a2a2a; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .2s; display: flex; align-items: center; gap: 5px; font-family: inherit; }
+    .btn-copy.ok { background: #052e16; color: #86efac; border-color: #14532d; }
+    .btn-setup { background: none; border: 1px solid #1e2024; color: #555; padding: 6px 10px; border-radius: 7px; font-size: 11px; cursor: pointer; font-family: inherit; }
+
+    /* Lang toggle */
+    .ltog { display: flex; gap: 2px; background: #111214; border-radius: 9px; padding: 3px; border: 1px solid #1e2024; }
+    .lbtn { padding: 6px 14px; border-radius: 7px; font-size: 12px; font-weight: 600; border: none; cursor: pointer; transition: all .15s; font-family: inherit; display: flex; align-items: center; gap: 5px; background: transparent; color: #555; }
+    .lbtn:hover { color: #888; }
+    .lbtn.on { background: #1e2024; color: #fff; }
+
+    /* Cards & blocks */
+    .card { background: #0d0e10; border: 1px solid #1a1c1f; border-radius: 16px; padding: 20px; margin-bottom: 28px; }
+    .card-sm { background: #0d0e10; border: 1px solid #1a1c1f; border-radius: 14px; padding: 8px 6px; margin-bottom: 24px; }
+    .divider { display: flex; align-items: center; gap: 12px; color: #333; font-size: 12px; font-weight: 500; margin-bottom: 14px; }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #1e2024; }
+
+    /* Phase rows */
+    .phase-row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 10px; transition: all .3s; }
+    .phase-row.active { background: #111214; }
+    @keyframes pd { 0%, 100% { opacity: .3; } 50% { opacity: 1; } }
+    .pd { width: 8px; height: 8px; border-radius: 50%; background: #4d7c0f; animation: pd 1.2s ease-in-out infinite; display: inline-block; }
+
+    /* Idea cards */
+    .idea-card { background: #111214; border: 1px solid #1e2024; border-radius: 12px; padding: 14px 16px; transition: all .15s; margin-bottom: 8px; }
+    .idea-card.clickable { cursor: pointer; }
+    .idea-card.clickable:hover { border-color: #3f6212; background: #12140f; }
+    .idea-card.locked { opacity: .6; }
+    .idea-card.sel { border-color: #4d7c0f; background: #151a0f; box-shadow: 0 0 0 2px #4d7c0f22; }
+    .kw { font-size: 10px; color: #555; background: #1a1c1f; padding: 2px 7px; border-radius: 4px; display: inline-block; margin: 2px; }
+
+    /* Source cards */
+    .src-card { background: #111214; border-radius: 10px; padding: 10px 14px; margin-bottom: 8px; }
+    .src-pill { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 2px 8px; border-radius: 5px; display: inline-block; }
+
+    /* Output blocks */
+    .oblock { background: #0d0e10; border: 1px solid #1a1c1f; border-radius: 14px; overflow: hidden; margin-bottom: 16px; }
+    .ohead { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid #1a1c1f; background: #0f1012; }
+    .ohead-label { font-size: 11px; font-weight: 600; color: #666; letter-spacing: .06em; text-transform: uppercase; }
+    .obody { padding: 16px; }
+    .obody pre { white-space: pre-wrap; word-break: break-word; font-size: 13px; line-height: 1.7; color: #bbb; font-family: 'SF Mono', 'Fira Code', monospace; margin: 0; }
+
+    /* Preview */
+    .prev { background: #faf9f7; border-radius: 12px; padding: 32px; max-width: 680px; margin: 0 auto; }
+    .prev h1 { font-family: 'Newsreader', serif; font-size: 26px; font-weight: 600; color: #1a1a1a; line-height: 1.2; margin-bottom: 6px; }
+    .prev h2 { font-family: 'Newsreader', serif; font-size: 21px; font-weight: 600; color: #1a1a1a; margin: 26px 0 10px; line-height: 1.3; }
+    .prev p { font-size: 15px; line-height: 1.85; color: #333; margin-bottom: 14px; }
+    .prev strong { color: #111; font-weight: 600; }
+    .prev em { font-style: italic; }
+    .prev blockquote { border-left: 3px solid #4d7c0f; padding: 4px 0 4px 18px; margin: 18px 0; font-style: italic; color: #555; }
+    .prev ul { padding-left: 22px; margin: 10px 0 16px; color: #333; }
+    .prev li { margin-bottom: 6px; line-height: 1.7; }
+
+    /* Misc */
+    .success-bar { font-size: 13px; font-weight: 600; color: #4d7c0f; display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: #0d120a; border-radius: 10px; border: 1px solid #1a2f0d; margin-bottom: 16px; }
+    .pick-hint { background: #0d120a; border: 1px solid #1a2f0d; border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; font-size: 13px; color: #a3e635; font-weight: 500; }
+    .error-bar { background: #1a0a0a; border: 1px solid #7f1d1d44; border-radius: 12px; padding: 14px 18px; margin-bottom: 24px; color: #fca5a5; font-size: 13px; }
+    .section-label { font-size: 12px; font-weight: 600; color: #555; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 10px; }
+    .empty { text-align: center; padding: 48px 20px; }
+    .empty-icon { font-size: 40px; margin-bottom: 12px; }
+    .empty-text { font-size: 14px; color: #555; max-width: 420px; margin: 0 auto; line-height: 1.8; }
+    .footer-hint { text-align: center; font-size: 12px; color: #444; padding: 8px 0 16px; }
+    @keyframes fi { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .fi { animation: fi .4s ease-out forwards; }
+    .hidden { display: none; }
+
+    /* Setup */
+    .setup-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .setup-box { background: #0d0e10; border: 1px solid #1a1c1f; border-radius: 20px; padding: 36px; max-width: 460px; width: 100%; }
+    .setup-info { font-size: 12px; color: #555; line-height: 1.7; margin-bottom: 20px; padding: 12px 14px; background: #111214; border-radius: 10px; }
+    .setup-btn { width: 100%; border: none; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; transition: all .2s; }
+  </style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script>
+// ─── State ───
+const state = {
+  apiKey: localStorage.getItem("pb_api_key") || "",
+  showSetup: !localStorage.getItem("pb_api_key"),
+  language: "sr",
+  topic: "",
+  category: "Top Namirnice",
+  mode: null,
+  phase: null,
+  phasesDone: [],
+  error: null,
+  ideas: [],
+  selectedIdea: null,
+  sources: [],
+  result: null,
+  pickingIdea: false,
+};
+
+const LANGS = { sr: { site: "plantbased.rs", flag: "🇷🇸" }, en: { site: "plantbasedhouse.com", flag: "🇬🇧" } };
+const CATS = ["Top Namirnice", "PB Kuhinja", "Recepti", "Zdravlje", "Lifestyle", "Vesti", "Tips & Tricks"];
+const PH_DISC = [
+  { key: "trending", label: "Scanning trending plant-based topics", icon: "📡" },
+  { key: "sources", label: "Gathering real opinions & quotes", icon: "🔍" },
+  { key: "writing", label: "Writing & humanizing article", icon: "✍️" },
+  { key: "formatting", label: "Formatting for Telegraf CMS", icon: "📋" },
+];
+const PH_TOPIC = [
+  { key: "ideas", label: "Finding angles for your topic", icon: "💡" },
+  { key: "sources", label: "Gathering real opinions & quotes", icon: "🔍" },
+  { key: "writing", label: "Writing & humanizing article", icon: "✍️" },
+  { key: "formatting", label: "Formatting for Telegraf CMS", icon: "📋" },
+];
+
+function render() {
+  document.getElementById("app").innerHTML = state.showSetup ? renderSetup() : renderMain();
+  bindEvents();
+}
+
+// ─── API ───
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+async function callClaude(messages, maxTokens = 1000, model = "claude-sonnet-4-20250514") {
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-api-key": state.apiKey, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
+    body: JSON.stringify({ model, max_tokens: maxTokens, messages }),
+  });
+  if (!res.ok) throw new Error(`API ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  const data = await res.json();
+  return data.content.map(b => b.text || "").join("");
+}
+
+async function callClaudeSearch(messages, maxTokens = 2000, model = "claude-haiku-4-5-20251001") {
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-api-key": state.apiKey, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
+    body: JSON.stringify({ model, max_tokens: maxTokens, messages, tools: [{ type: "web_search_20250305", name: "web_search" }] }),
+  });
+  if (!res.ok) throw new Error(`API ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  const data = await res.json();
+  return data.content.filter(b => b.type === "text").map(b => b.text).join("\n\n");
+}
+
+function parseJSON(raw) {
+  const clean = raw.replace(/```json|```/g, "").trim();
+  const s1 = clean.indexOf("["), s2 = clean.indexOf("{");
+  let s = -1;
+  if (s1 >= 0 && s2 >= 0) s = Math.min(s1, s2); else s = Math.max(s1, s2);
+  if (s < 0) throw new Error("No JSON found");
+  return JSON.parse(clean.slice(s));
+}
+
+// ─── Pipeline steps ───
+async function discoverTrending() {
+  state.phase = "trending"; render();
+  const raw = await callClaudeSearch([{ role: "user", content: `You are a content strategist for a plant-based food blog. Search the web for what's trending RIGHT NOW in plant-based/vegan/whole-food. Look for: trending ingredients, viral recipes, new products, health studies, seasonal topics, community debates. Search Reddit r/vegan r/PlantBasedDiet, food blogs, nutrition news. Return ONLY a JSON array of 8 ideas, no markdown no backticks: [{"title":"Blog title","angle":"1 sentence angle","keywords":["seo"],"trending_reason":"Why hot now","heat":"🔥🔥🔥"}] Use 1-3 fire emojis for heat.` }], 3000);
+  const parsed = parseJSON(raw);
+  state.ideas = parsed; state.phasesDone.push("trending"); state.pickingIdea = true; render();
+}
+
+async function findAngles(topic) {
+  state.phase = "ideas"; render();
+  const raw = await callClaudeSearch([{ role: "user", content: `You are a content strategist for a plant-based food blog. Find article angles for: "${topic}". Search the web for what people say/ask/debate about this. Return ONLY a JSON array of 6 ideas, no markdown: [{"title":"Blog title","angle":"Angle","keywords":["seo"],"trending_reason":"Why this works","heat":"🔥🔥"}]` }], 2000);
+  try {
+    state.ideas = parseJSON(raw);
+  } catch {
+    state.ideas = [{ title: topic, angle: "General overview", keywords: [topic.toLowerCase()], trending_reason: "User requested", heat: "🔥" }];
+  }
+  state.phasesDone.push("ideas"); state.pickingIdea = true; render();
+}
+
+async function gatherSources(idea) {
+  state.phase = "sources"; state.pickingIdea = false; render();
+  const raw = await callClaudeSearch([{ role: "user", content: `Find REAL opinions and quotes from real people online about: "${idea.title}" (${idea.angle}). Search Reddit r/vegan r/PlantBasedDiet r/veganrecipes r/EatCheapAndHealthy, food blogs, forums. Return ONLY a JSON array of 6-8 quotes, no markdown: [{"text":"Quote","author":"Username","source":"Where from","type":"reddit|forum|blog|social"}]` }], 2000);
+  try { state.sources = parseJSON(raw); } catch { state.sources = [{ text: "This is genuinely underrated.", author: "Anonymous", source: "Reddit", type: "reddit" }]; }
+  state.phasesDone.push("sources"); render();
+}
+
+async function writeArticle(idea, sources) {
+  state.phase = "writing"; render();
+  const srcStr = sources.map((s, i) => `[${i+1}] "${s.text}" — ${s.author} (${s.source})`).join("\n");
+  const lang = state.language === "sr"
+    ? `Write ENTIRELY in Serbian (latin, NOT cyrillic). Natural warm Serbian like a friend — use "e sad", "znate kako je", "verovali ili ne", "hajde da budemo iskreni" naturally. NOT robotic translation. Tone: friendly, personal.`
+    : `Write in natural warm English. Conversational, like a friend. Tone: friendly, personal.`;
+
+  const raw = await callClaude([{ role: "user", content: `You are a talented plant-based blog writer. Write about: "${idea.title}" (${idea.angle})
+
+${lang}
+
+ANTI-PLAGIARISM & ANTI-AI-DETECTION — CRITICAL:
+- NEVER copy any phrase from quotes below. Rephrase completely.
+- Attribute naturally: "Jedan korisnik na Redditu..." / "One Reddit user shared..." then PARAPHRASE.
+- Use at least 4-5 quotes, all paraphrased.
+- Every paragraph: different rhythm. Alternate short punchy / long flowing / questions / anecdotes.
+- Include 2-3 personal anecdotes with SPECIFIC details (place, time, sensory detail).
+- Natural imperfections throughout: (parenthetical asides), sentence fragments. Em-dash interruptions — mid thought. Casual "iskreno"/"honestly", "zapravo"/"actually".
+- Start some sentences with "I"/"And"/"But"/"A"/"Ali".
+- NEVER: "In today's world", "It's worth noting", "When it comes to", "In conclusion", "Let's dive in", "Whether you're a...or...", "At the end of the day", "U današnje vreme", "Važno je napomenuti", "Kada je reč o", "Na kraju dana"
+- Vary sentence length DRAMATICALLY within paragraphs.
+- Write like a REAL blogger, not AI.
+
+QUOTES TO PARAPHRASE:
+${srcStr}
+
+Return ONLY JSON (no markdown, no backticks):
+{"title":"SEO title","meta":"Under 155 chars","html":"Full article using ONLY: <h2> <p> <strong> <em> <ul> <li> <blockquote>. NO classes/styles/divs/spans/ids. Structure: hook paragraph, 3-5 h2 sections, closing."}` }], 4096);
+
+  state.phasesDone.push("writing"); render();
+  try { return parseJSON(raw); } catch { return { title: idea.title, meta: idea.angle, html: `<p>${raw.slice(0, 3000)}</p>` }; }
+}
+
+function formatForCMS(article) {
+  state.phase = "formatting"; render();
+  let html = article.html
+    .replace(/ class="[^"]*"/g, "").replace(/ style="[^"]*"/g, "").replace(/ id="[^"]*"/g, "")
+    .replace(/<div[^>]*>/g, "").replace(/<\/div>/g, "")
+    .replace(/<span[^>]*>/g, "").replace(/<\/span>/g, "")
+    .replace(/<br\s*\/?>/g, "").replace(/\n{3,}/g, "\n\n").trim();
+  state.result = { title: article.title, meta: article.meta, html };
+  state.phasesDone.push("formatting"); state.phase = "done"; render();
+}
+
+// ─── Runners ───
+async function runDiscover() {
+  Object.assign(state, { error: null, mode: "discover", phasesDone: [], ideas: [], selectedIdea: null, sources: [], result: null, pickingIdea: false });
+  try { await discoverTrending(); } catch (e) { state.error = e.message; state.phase = null; render(); }
+}
+
+async function runWithTopic() {
+  if (!state.topic.trim()) return;
+  Object.assign(state, { error: null, mode: "topic", phasesDone: [], ideas: [], selectedIdea: null, sources: [], result: null, pickingIdea: false });
+  try { await findAngles(state.topic); } catch (e) { state.error = e.message; state.phase = null; render(); }
+}
+
+async function pickIdea(idx) {
+  const idea = state.ideas[idx];
+  if (!idea) return;
+  state.selectedIdea = idea; state.sources = []; state.result = null;
+  const first = state.mode === "discover" ? "trending" : "ideas";
+  state.phasesDone = [first]; state.pickingIdea = false;
+  render();
+  try {
+    await gatherSources(idea);
+    await sleep(3000);
+    const article = await writeArticle(idea, state.sources);
+    formatForCMS(article);
+  } catch (e) { state.error = e.message; state.phase = null; render(); }
+}
+
+// ─── Copy helper ───
+function copyField(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  navigator.clipboard.writeText(el.dataset.copy);
+  const btn = el.querySelector('.btn-copy');
+  if (btn) { btn.textContent = "✓ Copied"; btn.classList.add("ok"); setTimeout(() => { btn.textContent = btn.dataset.label || "Copy"; btn.classList.remove("ok"); }, 1800); }
+}
+
+// ─── Render: Setup ───
+function renderSetup() {
+  return `
+    <div class="setup-wrap">
+      <div class="setup-box">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+          <div class="logo-icon" style="width:40px;height:40px;border-radius:11px;font-size:20px">🌱</div>
+          <div>
+            <div style="font-size:18px;font-weight:700;color:#f0f0f0">PlantBased Pipeline</div>
+            <div style="font-size:12px;color:#555">Content automation for Telegraf CMS</div>
+          </div>
+        </div>
+        <div style="margin-bottom:20px">
+          <label style="display:block;font-size:12px;font-weight:600;color:#666;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">Anthropic API Key</label>
+          <input type="password" id="setup-key" class="inp-pw" placeholder="sk-ant-..." value="${state.apiKey}" />
+        </div>
+        <div class="setup-info">
+          <strong style="color:#888">How to get a key:</strong><br>
+          1. Go to <span style="color:#a3e635">console.anthropic.com</span><br>
+          2. Settings → API Keys → Create Key<br>
+          3. Paste above — stored only in your browser
+        </div>
+        <button id="save-key-btn" class="setup-btn" style="background:#3f6212;color:#d9f99d">Start Using Pipeline →</button>
+      </div>
+    </div>`;
+}
+
+// ─── Render: Main ───
+function renderMain() {
+  const lang = LANGS[state.language];
+  const isRunning = state.phase && state.phase !== "done" && !state.pickingIdea;
+  const phases = state.mode === "discover" ? PH_DISC : PH_TOPIC;
+
+  let html = `
+    <header class="header">
+      <div class="header-inner">
+        <div class="logo">
+          <div class="logo-icon">🌱</div>
+          <div><div class="logo-text">PlantBased Pipeline</div><div class="logo-sub">${lang.site}</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="ltog">
+            <button class="lbtn ${state.language==='sr'?'on':''}" data-lang="sr">${LANGS.sr.flag} SR</button>
+            <button class="lbtn ${state.language==='en'?'on':''}" data-lang="en">${LANGS.en.flag} EN</button>
+          </div>
+          <button class="btn-setup" id="btn-settings" title="Change API key">⚙️</button>
+        </div>
+      </div>
+    </header>
+    <main class="main">`;
+
+  // Input area
+  html += `
+    <div class="card">
+      <button class="btn-disc" id="btn-discover" ${isRunning?'disabled':''}>${isRunning && state.mode==='discover' ? '📡 Scanning...' : '📡 Discover What\'s Trending'}</button>
+      <div class="divider" style="margin-top:14px">or enter a specific topic</div>
+      <div style="display:flex;gap:10px;margin-bottom:12px">
+        <input class="inp" id="inp-topic" style="font-size:15px" placeholder="${state.language==='sr'?'npr. \'brusnice\', \'veganski proteini\', \'meal prep\'':'e.g. \'cranberry benefits\', \'vegan protein\', \'meal prep\''}" value="${state.topic.replace(/"/g,'&quot;')}" />
+        <button class="btn-go" id="btn-topic" ${!state.topic.trim()||isRunning?'disabled':''}>${isRunning && state.mode==='topic' ? 'Working...' : 'Find Angles →'}</button>
+      </div>
+      <div style="display:flex;gap:10px">
+        <select class="inp" id="sel-cat" style="max-width:200px">${CATS.map(c=>`<option ${state.category===c?'selected':''}>${c}</option>`).join('')}</select>
+        <div style="flex:1;display:flex;align-items:center;padding-left:4px;font-size:12px;color:#444">Pick an idea → full article auto-generated for Telegraf</div>
+      </div>
+    </div>`;
+
+  // Progress
+  if (state.phase || state.phasesDone.length > 0) {
+    html += `<div class="card-sm">`;
+    for (const p of phases) {
+      const done = state.phasesDone.includes(p.key);
+      const active = state.phase === p.key;
+      const waiting = !done && !active;
+      const opacity = waiting && state.phase && !state.pickingIdea ? .3 : waiting ? .5 : 1;
+      html += `<div class="phase-row ${active?'active':''}" style="opacity:${opacity}">
+        <div style="width:28px;text-align:center">${done ? '<span style="color:#4d7c0f;font-size:16px">✓</span>' : active && !state.pickingIdea ? '<span class="pd"></span>' : `<span style="color:#333;font-size:14px">${p.icon}</span>`}</div>
+        <span style="font-size:13px;font-weight:${active?600:400};color:${done?'#4d7c0f':active?'#e0e0e0':'#555'}">${p.label}</span>
+        ${active && !state.pickingIdea ? '<span style="font-size:11px;color:#555;margin-left:auto">in progress...</span>' : ''}
+      </div>`;
+    }
+    html += `</div>`;
+  }
+
+  // Error
+  if (state.error) html += `<div class="error-bar"><strong>Error:</strong> ${state.error}</div>`;
+
+  // Pick hint
+  if (state.pickingIdea) html += `<div class="pick-hint fi">👇 Pick an article idea to start generating</div>`;
+
+  // Ideas
+  if (state.ideas.length > 0) {
+    const canClick = state.pickingIdea || state.phase === "done";
+    html += `<div class="fi" style="margin-bottom:24px">
+      <div class="section-label" style="display:flex;justify-content:space-between">
+        <span>${state.mode==='discover'?'Trending Now':'Article Angles'} — ${state.ideas.length} ideas</span>
+        ${state.phase==='done'?'<span style="font-weight:400;text-transform:none;font-size:11px;color:#666">Click any to regenerate</span>':''}
+      </div>`;
+    state.ideas.forEach((idea, i) => {
+      const sel = state.selectedIdea === idea;
+      html += `<div class="idea-card ${sel?'sel':''} ${canClick?'clickable':'locked'}" data-idea="${i}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+              ${idea.heat?`<span style="font-size:13px">${idea.heat}</span>`:''}
+              <span style="font-size:14px;font-weight:600;color:#e0e0e0;line-height:1.3">${idea.title}</span>
+            </div>
+            <div style="font-size:12px;color:#777;line-height:1.5">${idea.angle||''}</div>
+            ${idea.trending_reason?`<div style="font-size:11px;color:#555;margin-top:4px;font-style:italic">${idea.trending_reason}</div>`:''}
+          </div>
+          ${sel?'<span style="font-size:10px;background:#3f621222;color:#a3e635;padding:3px 8px;border-radius:6px;font-weight:600;white-space:nowrap;flex-shrink:0">SELECTED</span>':''}
+        </div>
+        ${idea.keywords?`<div style="margin-top:8px">${idea.keywords.slice(0,5).map(k=>`<span class="kw">${k}</span>`).join('')}</div>`:''}
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // Sources
+  if (state.sources.length > 0 && state.phase !== "sources") {
+    const colors = { reddit: "#ff6b35", forum: "#818cf8", blog: "#22d3ee", social: "#f472b6" };
+    html += `<div class="fi" style="margin-bottom:24px">
+      <div class="section-label">Real Quotes Found (${state.sources.length} integrated into article)</div>
+      <div style="background:#0d0e10;border:1px solid #1a1c1f;border-radius:14px;padding:14px">`;
+    state.sources.forEach(s => {
+      const c = colors[s.type] || "#888";
+      html += `<div class="src-card">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span class="src-pill" style="background:${c}15;color:${c}">${s.type}</span>
+          <span style="font-size:11px;color:#666">${s.author}</span>
+          <span style="font-size:11px;color:#444">• ${s.source}</span>
+        </div>
+        <div style="font-size:13px;color:#999;line-height:1.6;font-style:italic">"${s.text}"</div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  // Result
+  if (state.result) {
+    const r = state.result;
+    html += `<div class="fi">
+      <div class="success-bar"><span style="font-size:18px">✓</span> Article ready — copy each field into Telegraf CMS</div>
+
+      <div class="oblock" id="f-title" data-copy="${r.title.replace(/"/g,'&quot;')}">
+        <div class="ohead"><span class="ohead-label">Post Title &lt;h1&gt;</span><button class="btn-copy" data-label="Copy" onclick="copyField('f-title')">Copy</button></div>
+        <div class="obody"><div style="font-size:16px;font-weight:600;color:#e0e0e0">${r.title}</div></div>
+      </div>
+
+      <div class="oblock" id="f-meta" data-copy="${r.meta.replace(/"/g,'&quot;')}">
+        <div class="ohead"><span class="ohead-label">Meta Description <span style="color:${(r.meta||'').length>160?'#ef4444':'#444'};font-weight:400;margin-left:6px">(${(r.meta||'').length}/160)</span></span><button class="btn-copy" data-label="Copy" onclick="copyField('f-meta')">Copy</button></div>
+        <div class="obody"><div style="font-size:13px;color:#999;line-height:1.6">${r.meta}</div></div>
+      </div>
+
+      <div class="oblock" id="f-html" data-copy="">
+        <div class="ohead"><span class="ohead-label">Body HTML — paste in source/HTML mode</span><button class="btn-copy" data-label="Copy HTML" onclick="copyField('f-html')">Copy HTML</button></div>
+        <div class="obody" style="max-height:280px;overflow:auto"><pre>${r.html.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre></div>
+      </div>
+
+      <div class="oblock">
+        <div class="ohead"><span class="ohead-label">Preview</span></div>
+        <div style="padding:20px"><div class="prev">
+          <h1>${r.title}</h1>
+          <p style="font-size:12px;color:#999;font-style:italic;margin-bottom:16px">${r.meta}</p>
+          <hr style="border:none;border-top:1px solid #e5e5e5;margin:0 0 20px">
+          ${r.html}
+        </div></div>
+      </div>
+
+      <div class="footer-hint">Pick another idea above to regenerate, or discover new topics</div>
+    </div>`;
+  }
+
+  // Empty
+  if (!state.phase && !state.result) {
+    html += `<div class="empty">
+      <div class="empty-icon">🌱</div>
+      <div class="empty-text">Hit <strong style="color:#a3e635">Discover What's Trending</strong> to find article ideas automatically, or type a topic. Pick an idea and the pipeline handles everything.</div>
+    </div>`;
+  }
+
+  html += `</main>`;
+  return html;
+}
+
+// ─── Events ───
+function bindEvents() {
+  // Setup
+  const saveBtn = document.getElementById("save-key-btn");
+  if (saveBtn) {
+    saveBtn.onclick = () => {
+      const key = document.getElementById("setup-key").value.trim();
+      if (key.startsWith("sk-ant-")) { state.apiKey = key; localStorage.setItem("pb_api_key", key); state.showSetup = false; render(); }
+    };
+    document.getElementById("setup-key").onkeydown = (e) => { if (e.key === "Enter") saveBtn.click(); };
+    return;
+  }
+
+  // Settings
+  const btnSet = document.getElementById("btn-settings");
+  if (btnSet) btnSet.onclick = () => { localStorage.removeItem("pb_api_key"); state.showSetup = true; render(); };
+
+  // Language
+  document.querySelectorAll("[data-lang]").forEach(btn => {
+    btn.onclick = () => { state.language = btn.dataset.lang; render(); };
+  });
+
+  // Topic input
+  const inpTopic = document.getElementById("inp-topic");
+  if (inpTopic) {
+    inpTopic.oninput = (e) => { state.topic = e.target.value; document.getElementById("btn-topic").disabled = !state.topic.trim(); };
+    inpTopic.onkeydown = (e) => { if (e.key === "Enter" && state.topic.trim()) runWithTopic(); };
+  }
+
+  // Category
+  const selCat = document.getElementById("sel-cat");
+  if (selCat) selCat.onchange = (e) => { state.category = e.target.value; };
+
+  // Buttons
+  const btnDisc = document.getElementById("btn-discover");
+  if (btnDisc) btnDisc.onclick = runDiscover;
+  const btnTopic = document.getElementById("btn-topic");
+  if (btnTopic) btnTopic.onclick = runWithTopic;
+
+  // Idea cards
+  document.querySelectorAll("[data-idea]").forEach(card => {
+    if (card.classList.contains("clickable")) {
+      card.onclick = () => pickIdea(parseInt(card.dataset.idea));
+    }
+  });
+
+  // Fix HTML copy (data-copy on f-html needs special handling since it contains HTML)
+  const fhtml = document.getElementById("f-html");
+  if (fhtml && state.result) fhtml.dataset.copy = state.result.html;
+}
+
+// Go
+render();
+</script>
+</body>
+</html>
