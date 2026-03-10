@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>PlantBased Pipeline</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+::selection{background:#365314;color:#fff}
+body{background:#08090a;color:#e0e0e0;font-family:'Instrument Sans',system-ui,sans-serif;min-height:100vh}
+.hdr{border-bottom:1px solid #141517;padding:14px 24px}
+.hdr-in{max-width:820px;margin:0 auto;display:flex;justify-content:space-between;align-items:center}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-i{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#365314,#4d7c0f);display:flex;align-items:center;justify-content:center;font-size:16px}
+.mn{max-width:820px;margin:0 auto;padding:24px}
+.inp{background:#111214;border:1px solid #1e2024;color:#e0e0e0;border-radius:10px;padding:10px 14px;font-size:14px;width:100%;outline:none;transition:border-color .2s;font-family:inherit}
+.inp:focus{border-color:#3f6212;box-shadow:0 0 0 3px #3f621218}
+.inp::placeholder{color:#444}
+select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg width='10' height='6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23555' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:34px}
+textarea.inp{resize:vertical;min-height:60px;line-height:1.5}
+.bg{background:#3f6212;color:#d9f99d;border:none;padding:10px 22px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit;white-space:nowrap}
+.bg:hover{background:#4d7c0f;transform:translateY(-1px)}
+.bg:disabled{opacity:.35;cursor:not-allowed;transform:none}
+.bd{background:#111214;color:#a3e635;border:1px solid #1e2024;padding:12px 22px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit;white-space:nowrap;width:100%;display:flex;align-items:center;justify-content:center;gap:8px}
+.bd:hover{background:#151a0f;border-color:#3f6212}
+.bd:disabled{opacity:.35;cursor:not-allowed}
+.bc{background:#1a1a1a;color:#888;border:1px solid #2a2a2a;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px;font-family:inherit}
+.bc.ok{background:#052e16;color:#86efac;border-color:#14532d}
+.crd{background:#0d0e10;border:1px solid #1a1c1f;border-radius:14px;padding:18px;margin-bottom:20px}
+.row{display:flex;gap:10px;margin-bottom:10px}
+.dv{display:flex;align-items:center;gap:12px;color:#333;font-size:12px;font-weight:500;margin:12px 0}
+.dv::before,.dv::after{content:'';flex:1;height:1px;background:#1e2024}
+.pr{display:flex;align-items:center;gap:12px;padding:9px 14px;border-radius:10px;transition:all .3s}
+.pr.act{background:#111214}
+@keyframes pd{0%,100%{opacity:.3}50%{opacity:1}}
+.pd{width:8px;height:8px;border-radius:50%;background:#4d7c0f;animation:pd 1.2s ease-in-out infinite;display:inline-block}
+.ic{background:#111214;border:1px solid #1e2024;border-radius:12px;padding:13px 15px;transition:all .15s;margin-bottom:8px}
+.ic.ck{cursor:pointer}.ic.ck:hover{border-color:#3f6212;background:#12140f}
+.ic.sl{border-color:#4d7c0f;background:#151a0f}
+.ob{background:#0d0e10;border:1px solid #1a1c1f;border-radius:14px;overflow:hidden;margin-bottom:14px}
+.oh{display:flex;justify-content:space-between;align-items:center;padding:11px 15px;border-bottom:1px solid #1a1c1f;background:#0f1012}
+.ol{font-size:11px;font-weight:600;color:#666;letter-spacing:.06em;text-transform:uppercase}
+.oy{padding:15px}
+.oy pre{white-space:pre-wrap;word-break:break-word;font-size:12px;line-height:1.7;color:#bbb;font-family:'SF Mono',monospace;margin:0}
+.pv{background:#faf9f7;border-radius:12px;padding:28px;max-width:680px;margin:0 auto}
+.pv h1{font-family:'Newsreader',serif;font-size:24px;font-weight:600;color:#1a1a1a;line-height:1.2;margin-bottom:6px}
+.pv h2{font-family:'Newsreader',serif;font-size:20px;font-weight:600;color:#1a1a1a;margin:24px 0 10px;line-height:1.3}
+.pv p{font-size:14.5px;line-height:1.85;color:#333;margin-bottom:13px}
+.pv strong{color:#111;font-weight:600}
+.pv em{font-style:italic}
+.pv blockquote{border-left:3px solid #4d7c0f;padding:4px 0 4px 16px;margin:16px 0;font-style:italic;color:#555}
+.pv ul{padding-left:20px;margin:10px 0 14px;color:#333}
+.pv li{margin-bottom:5px;line-height:1.7}
+.lbl{display:block;font-size:11px;font-weight:600;color:#555;letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px}
+.sl-wrap{display:flex;align-items:center;gap:12px}
+.sl-wrap input[type=range]{flex:1;accent-color:#4d7c0f;height:4px}
+.sl-wrap span{font-size:11px;color:#666;min-width:60px}
+.tag{font-size:10px;color:#555;background:#1a1c1f;padding:2px 7px;border-radius:4px;display:inline-block;margin:2px}
+.seo-bar{height:6px;border-radius:3px;background:#1a1c1f;overflow:hidden;margin-top:6px}
+.seo-fill{height:100%;border-radius:3px;transition:width .5s}
+.ltog{display:flex;gap:2px;background:#111214;border-radius:9px;padding:3px;border:1px solid #1e2024}
+.lb{padding:6px 12px;border-radius:7px;font-size:12px;font-weight:600;border:none;cursor:pointer;transition:all .15s;font-family:inherit;display:flex;align-items:center;gap:4px;background:transparent;color:#555}
+.lb:hover{color:#888}.lb.on{background:#1e2024;color:#fff}
+@keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fi{animation:fi .4s ease-out forwards}
+.setup-w{min-height:100vh;display:flex;align-items:center;justify-content:center}
+.setup-b{background:#0d0e10;border:1px solid #1a1c1f;border-radius:20px;padding:32px;max-width:460px;width:100%}
+.sinfo{font-size:12px;color:#555;line-height:1.7;margin-bottom:18px;padding:12px 14px;background:#111214;border-radius:10px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const VOICE_GUIDE=`VOICE & STYLE RULES FOR plantbased.rs (MANDATORY):
+TONE: Informative, authoritative, approachable. Like a knowledgeable journalist, NOT a personal blogger. Third-person by default. First person ONLY for recipe/experience articles.
+LANGUAGE: Serbian latin script ONLY. Never cyrillic. Use proper Serbian terms: zamrzivač (not freezer), mešavina (not mix). Serbian forms not Croatian: ugljenični (not ugljični), hleb (not kruh). Correct padezi is the #1 priority.
+TITLES: Long, descriptive, SEO-heavy, use colons or questions. Example: "Začin koji čuva jetru, kosti i održava stabilan nivo šećera u krvi: Zdravstveni benefiti koje možda niste znali"
+STRUCTURE: Opening hook paragraph, H2 sections (informative not clickbait), 1-3 short paragraphs per section, bold **key terms** on first mention, closing summary with caveat.
+STYLE: Measured enthusiasm (odličan, izvanredan OK but sparingly). Never dramatic (brutalno, šokantno, ludo). No em-dashes. No AI phrases: "U današnje vreme", "Važno je napomenuti", "Kada je reč o". Keep sentences clear, medium-length. Use "Vi/Vas/Vam" capitalized for reader address. Scientific terms in italic.
+NEVER: English loanwords when Serbian exists, Croatian forms, overly casual slang, first person (unless recipe), dramatic adjectives.`;
+
+const VOICE_GUIDE_EN=`VOICE & STYLE RULES FOR plantbasedhouse.com (MANDATORY):
+TONE: Informative, authoritative, approachable. Like a knowledgeable journalist. Third-person by default.
+TITLES: Long, descriptive, SEO-heavy, use colons or questions.
+STRUCTURE: Opening hook, H2 sections, 1-3 short paragraphs per section, bold **key terms** on first mention, closing summary with caveat.
+STYLE: Measured enthusiasm. Never dramatic. No em-dashes. No AI phrases: "In today's world", "It's worth noting", "When it comes to", "Let's dive in". Keep sentences clear, medium-length.`;
+
+const state={apiKey:localStorage.getItem("pb_api_key")||"",showSetup:!localStorage.getItem("pb_api_key"),lang:"sr",topic:"",url:"",cat:"Top Namirnice",mode:null,phase:null,done:[],error:null,ideas:[],selIdea:null,sources:[],result:null,picking:false,length:"medium",tone:50,shutterstock:[],seo:null};
+const CATS=["Top Namirnice","PB Kuhinja","Recepti","Zdravlje","Lifestyle","Vesti","Tips & Tricks"];
+const LENGTHS={short:"Short (400-600 words)",medium:"Medium (600-900 words)",long:"Long (900-1200+ words)"};
+const PH_D=[{k:"trending",l:"Scanning trending topics",i:"📡"},{k:"sources",l:"Gathering quotes & studies",i:"🔍"},{k:"writing",l:"Writing article",i:"✍️"},{k:"grammar",l:"Grammar & voice check",i:"🇷🇸"},{k:"seo",l:"SEO optimization",i:"📊"},{k:"media",l:"Finding images & embeds",i:"📷"},{k:"formatting",l:"Formatting for Telegraf",i:"📋"}];
+const PH_T=[{k:"ideas",l:"Finding angles",i:"💡"},{k:"sources",l:"Gathering quotes & studies",i:"🔍"},{k:"writing",l:"Writing article",i:"✍️"},{k:"grammar",l:"Grammar & voice check",i:"🇷🇸"},{k:"seo",l:"SEO optimization",i:"📊"},{k:"media",l:"Finding images & embeds",i:"📷"},{k:"formatting",l:"Formatting for Telegraf",i:"📋"}];
+const PH_U=[{k:"scraping",l:"Reading source content",i:"🔗"},{k:"sources",l:"Gathering additional quotes",i:"🔍"},{k:"writing",l:"Writing article",i:"✍️"},{k:"grammar",l:"Grammar & voice check",i:"🇷🇸"},{k:"seo",l:"SEO optimization",i:"📊"},{k:"media",l:"Finding images & embeds",i:"📷"},{k:"formatting",l:"Formatting for Telegraf",i:"📋"}];
+
+function render(){document.getElementById("app").innerHTML=state.showSetup?rSetup():rMain();bind()}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+async function api(body,retries=3){
+for(let i=0;i<=retries;i++){
+const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":state.apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify(body)});
+if(r.ok)return await r.json();
+if(r.status===429&&i<retries){const w=Math.min(parseInt(r.headers.get("retry-after")||"0")||30+i*15,90);state.error=`⏳ Rate limit, waiting ${w}s (${i+1}/${retries})...`;render();await sleep(w*1000);state.error=null;render();continue}
+throw new Error(`API ${r.status}: ${(await r.text()).slice(0,200)}`)}
+}
+async function claude(msg,tok=1000,mod="claude-sonnet-4-20250514"){const d=await api({model:mod,max_tokens:tok,messages:msg});return d.content.map(b=>b.text||"").join("")}
+async function claudeS(msg,tok=1500,mod="claude-haiku-4-5-20251001"){const d=await api({model:mod,max_tokens:tok,messages:msg,tools:[{type:"web_search_20250305",name:"web_search"}]});return d.content.filter(b=>b.type==="text").map(b=>b.text).join("\n\n")}
+function pJ(r){const c=r.replace(/```json|```/g,"").trim();
+// Try to find JSON array first, then object
+const a=c.indexOf("["),b=c.indexOf("{");
+let s=-1;if(a>=0&&b>=0)s=Math.min(a,b);else s=Math.max(a,b);
+if(s<0)throw new Error("No JSON found in response");
+const sub=c.slice(s);
+// Find the matching closing bracket
+try{return JSON.parse(sub)}catch{
+// Try to find just the array/object portion
+const isArr=sub[0]==="[";const close=isArr?"]":"}";
+let depth=0;let end=-1;
+for(let i=0;i<sub.length;i++){if(sub[i]===sub[0])depth++;if(sub[i]===close)depth--;if(depth===0){end=i+1;break}}
+if(end>0)try{return JSON.parse(sub.slice(0,end))}catch{}
+throw new Error("Could not parse JSON from response")}}
+function esc(s){return(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+function copyF(id){const e=document.getElementById(id);if(!e)return;navigator.clipboard.writeText(e.dataset.copy||"");const b=e.querySelector('.bc');if(b){b.textContent="✓ Copied";b.classList.add("ok");setTimeout(()=>{b.textContent=b.dataset.l||"Copy";b.classList.remove("ok")},1800)}}
+
+// ─── Pipeline Steps ───
+
+async function discover(){
+state.phase="trending";render();
+const r=await claudeS([{role:"user",content:`Search for trending plant-based/vegan topics from the LAST 7 DAYS. Check Reddit, food blogs, news.
+
+IMPORTANT: For each idea, also search "site:plantbased.telegraf.rs" + the topic keywords to check if plantbased.rs already covered it. If they have a very similar article, mark it as duplicate.
+
+Return ONLY JSON array of 6 items: [{"title":"Blog title","angle":"1 sentence","keywords":["seo"],"reason":"Why trending","heat":"🔥🔥","date":"2026-03-10","source_name":"Reddit r/vegan","source_url":"https://...","already_covered":false,"existing_url":"only if duplicate found"}]
+
+Include the source website/thread where you found the trend, and approximate date.`}]);
+state.ideas=pJ(r);state.done.push("trending");state.picking=true;render()}
+
+async function angles(t){
+state.phase="ideas";render();
+const r=await claudeS([{role:"user",content:`Find article angles for: "${t}". Search web for what people discuss about this in plant-based space.
+
+IMPORTANT: Also search "site:plantbased.telegraf.rs ${t}" to check if plantbased.rs already has similar articles. Mark any duplicates.
+
+Return ONLY JSON array of 6: [{"title":"Blog title","angle":"Angle","keywords":["seo"],"reason":"Why works","heat":"🔥🔥","date":"recent","source_name":"Where found","source_url":"https://...","already_covered":false,"existing_url":"only if duplicate"}]`}]);
+try{state.ideas=pJ(r)}catch{state.ideas=[{title:t,angle:"Overview",keywords:[t.toLowerCase()],reason:"Requested",heat:"🔥",date:"now",source_name:"Manual",source_url:""}]}
+state.done.push("ideas");state.picking=true;render()}
+
+async function scrapeURL(url){
+state.phase="scraping";render();
+const r=await claudeS([{role:"user",content:`Visit this URL: ${url}
+
+Read the full article. Extract: the main topic, key facts and data points, any studies mentioned, and the main argument.
+
+Then create 3 article ideas that cover the SAME TOPIC (not different topics). Each should be a different way to write about this same subject for a plant-based blog audience. For example: one could be a straightforward news report, another could focus on the health angle, another on the environmental angle.
+
+Also check site:plantbased.telegraf.rs for similar existing articles.
+
+Respond with ONLY a JSON array:
+[{"title":"Title covering same topic","angle":"Specific angle on this topic","keywords":["seo"],"reason":"Why this angle","heat":"🔥🔥","source_summary":"2 sentence summary of original article","source_name":"Site name","source_url":"${url}","already_covered":false,"existing_url":""}]`}],2000,"claude-sonnet-4-20250514");
+try{state.ideas=pJ(r)}catch(e){
+state.ideas=[{title:"Article from "+new URL(url).hostname,angle:"Rewrite of source article",keywords:["plant-based"],reason:"Imported",heat:"🔥",source_summary:"Imported from URL",source_name:new URL(url).hostname,source_url:url,already_covered:false}]}
+state.done.push("scraping");state.picking=true;render()}
+
+async function getSources(idea){
+state.phase="sources";state.picking=false;render();
+const r=await claudeS([{role:"user",content:`Find for "${idea.title}":
+1) Real Reddit/forum discussions about this topic (3-4). For each, include the ACTUAL URL of the thread/comment so it can be linked in the article.
+2) Relevant scientific studies if any (1-2 with journal, year, DOI if possible).
+
+Return JSON: {"quotes":[{"text":"What the person said","author":"Username","source":"r/vegan","type":"reddit|forum|blog","url":"https://reddit.com/r/...actual thread URL"}],"studies":[{"finding":"Key finding","journal":"Journal name","year":"2024","doi":"if available","url":"https://...link to study"}]}`}]);
+try{const p=pJ(r);state.sources=p.quotes||p;state.studies=p.studies||[]}catch{state.sources=[{text:"Topic needs more coverage.",author:"Anonymous",source:"Forum",type:"forum",url:""}];state.studies=[]}
+state.done.push("sources");render()}
+
+async function writeArticle(idea,sources,studies){
+state.phase="writing";render();
+const vg=state.lang==="sr"?VOICE_GUIDE:VOICE_GUIDE_EN;
+const srcStr=(sources||[]).map((s,i)=>`[${i+1}] "${s.text}" — ${s.author} (${s.source}) URL: ${s.url||'no link'}`).join("\n");
+const studyStr=(studies||[]).map((s,i)=>`[Study ${i+1}] ${s.finding} (${s.journal}, ${s.year}) URL: ${s.url||s.doi||'no link'}`).join("\n");
+const lenMap={short:"400-600 words, 2-3 H2 sections",medium:"600-900 words, 3-4 H2 sections",long:"900-1200 words, 4-6 H2 sections"};
+const toneDesc=state.tone<30?"Very editorial, formal, objective":state.tone>70?"Warmer, slightly personal while staying professional":"Balanced editorial with approachable warmth";
+
+const r=await claude([{role:"user",content:`Write a plant-based blog article about: "${idea.title}" (${idea.angle})
+
+${vg}
+
+TONE CALIBRATION: ${toneDesc}
+LENGTH: ${lenMap[state.length]}
+
+CRITICAL FORMATTING RULES:
+1. Use ONLY proper HTML tags. NEVER use markdown **bold** syntax. Always use <strong>word</strong> for bold.
+2. NEVER output **word** — always <strong>word</strong>.
+3. For linked discussions, use this exact pattern from plantbasedhouse.com:
+   Write a sentence describing what the commenter said, then hyperlink a key phrase to the actual discussion URL.
+   Example: <a href="https://reddit.com/r/vegan/...">a large proportion of plant calories goes to livestock</a>
+4. For studies, link to the study: Prema <a href="https://...">istraživanju objavljenom u Journal Name</a>...
+
+QUOTES TO INTEGRATE WITH LINKS (paraphrase the opinion, then link to the source):
+${srcStr||"No quotes available."}
+
+${studyStr?`STUDIES TO CITE WITH LINKS:
+${studyStr}`:"No studies found, skip citations."}
+
+QUOTE INTEGRATION STYLE (follow this exactly):
+DO NOT just drop quotes in. Instead, write a dedicated section (can be called "Onlajn diskusija" / "Online debate" or weave into relevant sections) where you:
+- Describe what the person/community discussed
+- Hyperlink a relevant phrase to the actual Reddit/forum thread URL using <a href="URL">linked text</a>
+- Example: Jedan korisnik u diskusiji na Redditu ističe da <a href="https://reddit.com/...">ishrana zasnovana na biljkama može značajno smanjiti rizik</a>, dok drugi naglašavaju...
+
+HTML TAGS ALLOWED: <h2> <p> <strong> <em> <ul> <li> <blockquote> <a href="URL">. NO classes/styles/divs/spans. NO markdown syntax anywhere.
+
+Return ONLY JSON: {"title":"SEO title with colon or question","meta":"Under 155 chars","html":"Full article HTML with proper <strong> tags and <a href> links","suggested_ig_hashtags":["3-4 hashtags"]}`}],4096);
+
+state.done.push("writing");render();
+try{
+let parsed=pJ(r);
+// Fix any remaining markdown bold that slipped through
+if(parsed.html)parsed.html=parsed.html.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
+return parsed;
+}catch{return{title:idea.title,meta:idea.angle,html:`<p>${r.slice(0,3000)}</p>`,suggested_ig_hashtags:[]}}}
+
+async function grammarCheck(article){
+state.phase="grammar";render();
+await sleep(10000);
+const r=await claude([{role:"user",content:`You are a Serbian language expert and editor. Fix ALL grammar, spelling and word choice issues in this article. 
+
+RULES:
+- Fix padezi (cases) errors — this is the top priority
+- Replace any Croatian forms with Serbian: ugljični→ugljenični, kruh→hleb, tjedan→nedelja
+- Replace English loanwords with Serbian: freezer→zamrzivač, smoothie→smoothie is OK (no Serbian equivalent)
+- Remove ALL em-dashes (—). Replace with commas or periods.
+- Ensure "Vi/Vas/Vam" is capitalized when addressing reader
+- Scientific terms should be in <em> tags
+- Replace any **markdown bold** with <strong>HTML bold</strong>
+- PRESERVE all <a href="..."> links exactly as they are. Do not modify URLs.
+- Fix any unnatural phrasing that sounds translated
+- Keep the exact same HTML structure, just fix the language
+
+Article HTML:
+${article.html}
+
+Return ONLY the corrected HTML. No JSON, no backticks. First character must be <.`}],4096);
+
+let clean=r.replace(/```html|```/g,"").trim();
+const ft=clean.indexOf("<");if(ft>0)clean=clean.slice(ft);
+state.done.push("grammar");render();
+return{...article,html:clean}}
+
+async function seoCheck(article){
+state.phase="seo";render();
+const prompt="You are an SEO expert for Google Discover. Optimize this article.\n\nTitle: "+article.title+"\nMeta: "+article.meta+"\n\nDO:\n1. TITLE: Rewrite for Discover (curiosity gap, 50-65 chars, primary keyword)\n2. META: Rewrite to 145-155 chars, keyword in first 60 chars\n3. SLUG: URL-friendly 3-6 words\n4. KEYWORDS: primary + 3-4 secondary\n5. SCORE: 0-100\n6. DISCOVER TIPS: 2-3 tips\n\nReturn ONLY JSON:\n{\"title_optimized\":\"New title\",\"meta_optimized\":\"New meta\",\"slug\":\"url-slug\",\"keywords\":[\"primary\",\"secondary\"],\"score\":80,\"discover_tips\":[\"Tip 1\",\"Tip 2\"],\"image_note\":\"Use hero image min 1200x675px\"}";
+const r=await claude([{role:"user",content:prompt}],800,"claude-haiku-4-5-20251001");
+try{
+state.seo=pJ(r);
+if(state.seo.title_optimized)article.title=state.seo.title_optimized;
+if(state.seo.meta_optimized)article.meta=state.seo.meta_optimized;
+}catch{state.seo={score:70,slug:"article",keywords:[],discover_tips:[],image_note:"Use 1200px+ wide images"}}
+state.done.push("seo");render();
+return article}
+
+async function findMedia(article){
+state.phase="media";render();
+const hashtags=article.suggested_ig_hashtags||[];
+const r=await claude([{role:"user",content:`For a plant-based article titled "${article.title}", suggest:
+1) 3 Shutterstock search queries (English) for relevant stock photos (1 hero/cover + 2 inline)
+2) 2-3 Instagram embed suggestions: provide real hashtags to search and type of post to look for
+
+Return JSON: {"shutterstock_queries":["query 1","query 2","query 3"],"instagram_suggestions":[{"hashtag":"#hashtag","description":"What to look for"}]}`}],500,"claude-haiku-4-5-20251001");
+try{const p=pJ(r);state.shutterstock=p.shutterstock_queries||[];state.igSuggestions=p.instagram_suggestions||[]}catch{state.shutterstock=[];state.igSuggestions=[]}
+state.done.push("media");render();
+return article}
+
+function formatCMS(article){
+state.phase="formatting";render();
+let h=article.html
+.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
+.replace(/ class="[^"]*"/g,"").replace(/ style="[^"]*"/g,"").replace(/ id="[^"]*"/g,"")
+.replace(/<div[^>]*>/g,"").replace(/<\/div>/g,"")
+.replace(/<span[^>]*>/g,"").replace(/<\/span>/g,"")
+.replace(/<br\s*\/?>/g,"").replace(/\n{3,}/g,"\n\n").trim();
+state.result={title:article.title,meta:article.meta,html:h};
+state.done.push("formatting");state.phase="done";render()}
+
+// ─── Runners ───
+async function runDiscover(){
+Object.assign(state,{error:null,mode:"discover",done:[],ideas:[],selIdea:null,sources:[],studies:[],result:null,picking:false,seo:null,shutterstock:[],igSuggestions:[]});
+try{await discover()}catch(e){state.error=e.message;state.phase=null;render()}}
+
+async function runTopic(){
+if(!state.topic.trim())return;
+Object.assign(state,{error:null,mode:"topic",done:[],ideas:[],selIdea:null,sources:[],studies:[],result:null,picking:false,seo:null,shutterstock:[],igSuggestions:[]});
+try{await angles(state.topic)}catch(e){state.error=e.message;state.phase=null;render()}}
+
+async function runURL(){
+if(!state.url.trim())return;
+Object.assign(state,{error:null,mode:"url",done:[],ideas:[],selIdea:null,sources:[],studies:[],result:null,picking:false,seo:null,shutterstock:[],igSuggestions:[]});
+try{await scrapeURL(state.url)}catch(e){state.error=e.message;state.phase=null;render()}}
+
+async function pick(idx){
+const idea=state.ideas[idx];if(!idea)return;
+state.selIdea=idea;state.sources=[];state.studies=[];state.result=null;state.seo=null;state.shutterstock=[];state.igSuggestions=[];
+const f=state.mode==="discover"?"trending":state.mode==="url"?"scraping":"ideas";
+state.done=[f];state.picking=false;render();
+try{
+await getSources(idea);
+await sleep(12000);
+let art=await writeArticle(idea,state.sources,state.studies);
+await sleep(12000);
+art=await grammarCheck(art);
+await sleep(8000);
+art=await seoCheck(art);
+await sleep(5000);
+art=await findMedia(art);
+formatCMS(art);
+}catch(e){state.error=e.message;state.phase=null;render()}}
+
+// ─── Render ───
+function rSetup(){return`<div class="setup-w"><div class="setup-b">
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:22px">
+<div class="logo-i" style="width:40px;height:40px;border-radius:11px;font-size:20px">🌱</div>
+<div><div style="font-size:18px;font-weight:700;color:#f0f0f0">PlantBased Pipeline</div><div style="font-size:12px;color:#555">Content automation for Telegraf CMS</div></div></div>
+<div style="margin-bottom:18px"><label class="lbl">Anthropic API Key</label>
+<input type="password" id="sk" class="inp" placeholder="sk-ant-..." value="${esc(state.apiKey)}"/></div>
+<div class="sinfo"><strong style="color:#888">How to get a key:</strong><br>1. Go to <span style="color:#a3e635">console.anthropic.com</span><br>2. Settings → API Keys → Create Key<br>3. Paste above</div>
+<button id="savk" style="width:100%;background:#3f6212;color:#d9f99d;border:none;padding:12px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">Start →</button>
+</div></div>`}
+
+function rMain(){
+const lang=state.lang==="sr"?"plantbased.rs":"plantbasedhouse.com";
+const run=state.phase&&state.phase!=="done"&&!state.picking;
+const phases=state.mode==="discover"?PH_D:state.mode==="url"?PH_U:PH_T;
+let h=`<header class="hdr"><div class="hdr-in"><div class="logo"><div class="logo-i">🌱</div><div><div style="font-size:15px;font-weight:700;color:#f0f0f0;letter-spacing:-.02em">PlantBased Pipeline</div><div style="font-size:11px;color:#444;margin-top:1px">${lang}</div></div></div>
+<div style="display:flex;align-items:center;gap:8px"><div class="ltog">
+<button class="lb ${state.lang==='sr'?'on':''}" data-lg="sr">🇷🇸 SR</button>
+<button class="lb ${state.lang==='en'?'on':''}" data-lg="en">🇬🇧 EN</button></div>
+<button class="lb" id="bset" title="API key">⚙️</button></div></div></header>
+<main class="mn">`;
+
+// Input area
+h+=`<div class="crd">
+<button class="bd" id="bdisc" ${run?'disabled':''}>${run&&state.mode==='discover'?'📡 Scanning...':'📡 Discover Trending'}</button>
+<div class="dv">or enter a topic</div>
+<div class="row"><input class="inp" id="itop" style="font-size:15px" placeholder="${state.lang==='sr'?'npr. brusnice, veganski proteini':'e.g. cranberry benefits, vegan protein'}" value="${esc(state.topic)}"/>
+<button class="bg" id="btop" ${!state.topic.trim()||run?'disabled':''}>Angles →</button></div>
+<div class="dv">or paste a Reddit/article URL</div>
+<div class="row"><input class="inp" id="iurl" placeholder="https://reddit.com/r/vegan/... or any article URL" value="${esc(state.url)}"/>
+<button class="bg" id="burl" ${!state.url.trim()||run?'disabled':''}>Import →</button></div>
+<div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;align-items:end">
+<div style="flex:1;min-width:140px"><label class="lbl">Category</label><select class="inp" id="scat">${CATS.map(c=>`<option ${state.cat===c?'selected':''}>${c}</option>`).join('')}</select></div>
+<div style="flex:1;min-width:140px"><label class="lbl">Length</label><select class="inp" id="slen">${Object.entries(LENGTHS).map(([k,v])=>`<option value="${k}" ${state.length===k?'selected':''}>${v}</option>`).join('')}</select></div>
+<div style="flex:1.5;min-width:200px"><label class="lbl">Tone: ${state.tone<30?'Editorial':state.tone>70?'Warm':'Balanced'}</label>
+<div class="sl-wrap"><span style="text-align:right">Editorial</span><input type="range" id="rtone" min="0" max="100" value="${state.tone}"/><span>Warm</span></div></div>
+</div></div>`;
+
+// Progress
+if(state.phase||state.done.length>0){
+h+=`<div class="crd" style="padding:8px 6px">`;
+for(const p of phases){const d=state.done.includes(p.k),a=state.phase===p.k,w=!d&&!a;
+h+=`<div class="pr ${a?'act':''}" style="opacity:${w&&state.phase&&!state.picking?.3:w?.5:1}">
+<div style="width:26px;text-align:center">${d?'<span style="color:#4d7c0f;font-size:15px">✓</span>':a&&!state.picking?'<span class="pd"></span>':`<span style="color:#333;font-size:13px">${p.i}</span>`}</div>
+<span style="font-size:13px;font-weight:${a?600:400};color:${d?'#4d7c0f':a?'#e0e0e0':'#555'}">${p.l}</span>
+${a&&!state.picking?'<span style="font-size:11px;color:#555;margin-left:auto">in progress...</span>':''}
+</div>`}h+=`</div>`}
+
+// Error/waiting
+if(state.error){const w=state.error.includes("⏳");
+h+=`<div style="background:${w?'#1a1400':'#1a0a0a'};border:1px solid ${w?'#854d0e44':'#7f1d1d44'};border-radius:12px;padding:13px 16px;margin-bottom:18px;color:${w?'#fde68a':'#fca5a5'};font-size:13px">${state.error}</div>`}
+
+// Pick hint
+if(state.picking)h+=`<div class="fi" style="background:#0d120a;border:1px solid #1a2f0d;border-radius:12px;padding:11px 15px;margin-bottom:14px;color:#a3e635;font-size:13px;font-weight:500">👇 Pick an article idea</div>`;
+
+// Ideas
+if(state.ideas.length>0){const ck=state.picking||state.phase==="done";
+h+=`<div class="fi" style="margin-bottom:20px"><div style="font-size:12px;font-weight:600;color:#555;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;display:flex;justify-content:space-between"><span>${state.mode==='discover'?'Trending Now':'Article Angles'}</span>${state.phase==='done'?'<span style="font-weight:400;text-transform:none;font-size:11px;color:#666">Click to regenerate</span>':''}</div>`;
+state.ideas.forEach((idea,i)=>{const s=state.selIdea===idea;const dup=idea.already_covered;
+h+=`<div class="ic ${ck&&!dup?'ck':''} ${s?'sl':''} ${dup?'':''}" data-idea="${i}" style="${dup?'opacity:.5;border-color:#7f1d1d44':''}">
+${dup?'<div style="font-size:10px;font-weight:700;color:#ef4444;background:#1a0a0a;padding:3px 8px;border-radius:5px;margin-bottom:6px;display:inline-block">⚠️ SIMILAR ARTICLE EXISTS ON PLANTBASED.RS</div>':''}
+<div style="display:flex;justify-content:space-between;gap:10px">
+<div style="flex:1"><div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">${idea.heat?`<span style="font-size:12px">${idea.heat}</span>`:''}<span style="font-size:13px;font-weight:600;color:#e0e0e0;line-height:1.3">${esc(idea.title)}</span></div>
+<div style="font-size:11px;color:#777;line-height:1.4">${esc(idea.angle||'')}</div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;align-items:center">
+${idea.date?`<span style="font-size:10px;color:#555">📅 ${esc(idea.date)}</span>`:''}
+${idea.source_name?`<span style="font-size:10px;color:#555">📰 ${idea.source_url?`<a href="${esc(idea.source_url)}" target="_blank" style="color:#888;text-decoration:none">${esc(idea.source_name)} ↗</a>`:esc(idea.source_name)}</span>`:''}
+${dup&&idea.existing_url?`<span style="font-size:10px"><a href="${esc(idea.existing_url)}" target="_blank" style="color:#ef4444;text-decoration:none">View existing ↗</a></span>`:''}
+</div>
+${idea.source_summary?`<div style="font-size:11px;color:#666;margin-top:4px;font-style:italic">${esc(idea.source_summary)}</div>`:''}</div>
+${s?'<span style="font-size:10px;background:#3f621222;color:#a3e635;padding:3px 8px;border-radius:6px;font-weight:600;white-space:nowrap;flex-shrink:0;height:fit-content">SELECTED</span>':''}
+</div>${idea.keywords?`<div style="margin-top:6px">${idea.keywords.slice(0,5).map(k=>`<span class="tag">${esc(k)}</span>`).join('')}</div>`:''}
+</div>`});h+=`</div>`}
+
+// Sources + Studies
+if(state.sources&&state.sources.length>0&&state.phase!=="sources"){
+const cols={reddit:"#ff6b35",forum:"#818cf8",blog:"#22d3ee",social:"#f472b6"};
+h+=`<div class="fi" style="margin-bottom:20px"><div style="font-size:12px;font-weight:600;color:#555;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">Quotes (${state.sources.length})${state.studies&&state.studies.length?` + Studies (${state.studies.length})`:''}</div>
+<div class="crd" style="padding:12px;margin-bottom:0">`;
+state.sources.forEach(s=>{const c=cols[s.type]||"#888";
+h+=`<div style="background:#111214;border-radius:8px;padding:9px 12px;margin-bottom:6px">
+<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><span style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:2px 6px;border-radius:4px;background:${c}15;color:${c}">${s.type}</span><span style="font-size:10px;color:#666">${esc(s.author)}</span><span style="font-size:10px;color:#444">• ${esc(s.source)}</span></div>
+<div style="font-size:12px;color:#999;line-height:1.5;font-style:italic">"${esc(s.text)}"</div></div>`});
+if(state.studies&&state.studies.length>0){state.studies.forEach(s=>{
+h+=`<div style="background:#0f1214;border-radius:8px;padding:9px 12px;margin-bottom:6px;border-left:3px solid #3b82f6">
+<div style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#3b82f6;margin-bottom:3px">STUDY</div>
+<div style="font-size:12px;color:#bbb;line-height:1.5">${esc(s.finding)}</div>
+<div style="font-size:10px;color:#666;margin-top:3px">${esc(s.journal||'')} ${esc(s.year||'')}</div></div>`})}
+h+=`</div></div>`}
+
+// Result
+if(state.result){const r=state.result;
+h+=`<div class="fi">
+<div style="font-size:13px;font-weight:600;color:#4d7c0f;display:flex;align-items:center;gap:8px;padding:11px 15px;background:#0d120a;border-radius:10px;border:1px solid #1a2f0d;margin-bottom:14px">✓ Article ready for Telegraf CMS</div>`;
+
+// SEO & Discover (auto-applied)
+if(state.seo){const s=state.seo;const col=s.score>=80?'#4d7c0f':s.score>=60?'#ca8a04':'#dc2626';
+h+=`<div class="ob"><div class="oh"><span class="ol">SEO & Google Discover</span><span style="font-size:14px;font-weight:700;color:${col}">${s.score||70}/100</span></div>
+<div class="oy">
+<div style="font-size:11px;color:#4d7c0f;font-weight:600;margin-bottom:8px">✓ SEO optimizations auto-applied to title and meta</div>
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">${(s.keywords||[]).map(function(k){return '<span class="tag" style="color:#a3e635;background:#1a2f0d">'+esc(k)+'</span>'}).join('')}</div>
+<div class="seo-bar"><div class="seo-fill" style="width:${s.score||70}%;background:${col}"></div></div>
+${s.slug?'<div style="font-size:11px;color:#555;margin-top:8px">Slug: <span style="color:#888">'+esc(s.slug)+'</span></div>':''}
+${s.image_note?'<div style="font-size:11px;color:#ca8a04;margin-top:6px">📷 '+esc(s.image_note)+'</div>':''}
+${(s.discover_tips||[]).length?'<div style="margin-top:10px;padding-top:10px;border-top:1px solid #1a1c1f"><div style="font-size:10px;font-weight:700;color:#888;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px">GOOGLE DISCOVER TIPS</div>'+s.discover_tips.map(function(t){return '<div style="font-size:12px;color:#999;margin-bottom:4px">• '+esc(t)+'</div>'}).join('')+'</div>':''}
+</div></div>`}
+
+// Title
+h+=`<div class="ob" id="f-t" data-copy="${esc(r.title)}"><div class="oh"><span class="ol">Post Title</span><button class="bc" data-l="Copy" onclick="copyF('f-t')">Copy</button></div><div class="oy"><div style="font-size:15px;font-weight:600;color:#e0e0e0">${esc(r.title)}</div></div></div>`;
+// Meta
+h+=`<div class="ob" id="f-m" data-copy="${esc(r.meta)}"><div class="oh"><span class="ol">Meta <span style="color:${(r.meta||'').length>160?'#ef4444':'#444'};font-weight:400">(${(r.meta||'').length}/160)</span></span><button class="bc" data-l="Copy" onclick="copyF('f-m')">Copy</button></div><div class="oy"><div style="font-size:12px;color:#999;line-height:1.5">${esc(r.meta)}</div></div></div>`;
+// HTML
+h+=`<div class="ob" id="f-h"><div class="oh"><span class="ol">Body HTML (source mode)</span><button class="bc" data-l="Copy HTML" onclick="copyF('f-h')">Copy HTML</button></div><div class="oy" style="max-height:260px;overflow:auto"><pre>${esc(r.html)}</pre></div></div>`;
+
+// Media suggestions
+if((state.shutterstock&&state.shutterstock.length)||(state.igSuggestions&&state.igSuggestions.length)){
+h+=`<div class="ob"><div class="oh"><span class="ol">Media Suggestions</span></div><div class="oy">`;
+if(state.shutterstock.length){h+=`<div style="margin-bottom:12px"><div style="font-size:11px;font-weight:600;color:#888;margin-bottom:6px">📷 SHUTTERSTOCK SEARCHES</div>`;
+state.shutterstock.forEach((q,i)=>{
+h+=`<div style="display:flex;align-items:center;justify-content:space-between;background:#111214;border-radius:8px;padding:8px 12px;margin-bottom:4px">
+<span style="font-size:12px;color:#bbb">${i===0?'🖼️ Cover':'📸 Inline'}: "${esc(q)}"</span>
+<a href="https://www.shutterstock.com/search/${encodeURIComponent(q)}" target="_blank" style="font-size:11px;color:#a3e635;text-decoration:none">Search →</a></div>`});h+=`</div>`}
+if(state.igSuggestions&&state.igSuggestions.length){h+=`<div><div style="font-size:11px;font-weight:600;color:#888;margin-bottom:6px">📱 INSTAGRAM EMBEDS</div>`;
+state.igSuggestions.forEach(s=>{
+h+=`<div style="display:flex;align-items:center;justify-content:space-between;background:#111214;border-radius:8px;padding:8px 12px;margin-bottom:4px">
+<span style="font-size:12px;color:#bbb"><span style="color:#f472b6">${esc(s.hashtag)}</span> — ${esc(s.description)}</span>
+<a href="https://www.instagram.com/explore/tags/${encodeURIComponent((s.hashtag||'').replace('#',''))}/" target="_blank" style="font-size:11px;color:#a3e635;text-decoration:none">Browse →</a></div>`});h+=`</div>`}
+h+=`</div></div>`}
+
+// Preview
+h+=`<div class="ob"><div class="oh"><span class="ol">Preview</span></div><div style="padding:18px"><div class="pv"><h1>${esc(r.title)}</h1><p style="font-size:11px;color:#999;font-style:italic;margin-bottom:14px">${esc(r.meta)}</p><hr style="border:none;border-top:1px solid #e5e5e5;margin:0 0 18px">${r.html}</div></div></div>`;
+h+=`<div style="text-align:center;font-size:12px;color:#444;padding:6px 0 14px">Pick another idea to regenerate</div></div>`}
+
+// Empty
+if(!state.phase&&!state.result)h+=`<div style="text-align:center;padding:44px 20px"><div style="font-size:38px;margin-bottom:10px">🌱</div><div style="font-size:13px;color:#555;max-width:400px;margin:0 auto;line-height:1.8">Hit <strong style="color:#a3e635">Discover Trending</strong>, enter a topic, or paste a URL. Pick an idea and the pipeline handles research, writing, grammar, SEO, and CMS formatting.</div></div>`;
+
+h+=`</main>`;return h}
+
+// ─── Events ───
+function bind(){
+const sk=document.getElementById("savk");
+if(sk){sk.onclick=()=>{const k=(document.getElementById("sk").value||"").trim();if(k.startsWith("sk-ant-")){state.apiKey=k;localStorage.setItem("pb_api_key",k);state.showSetup=false;render()}};document.getElementById("sk").onkeydown=e=>{if(e.key==="Enter")sk.click()};return}
+document.getElementById("bset").onclick=()=>{localStorage.removeItem("pb_api_key");state.showSetup=true;render()};
+document.querySelectorAll("[data-lg]").forEach(b=>{b.onclick=()=>{state.lang=b.dataset.lg;render()}});
+const it=document.getElementById("itop");if(it){it.oninput=e=>{state.topic=e.target.value};it.onkeydown=e=>{if(e.key==="Enter"&&state.topic.trim())runTopic()}}
+const iu=document.getElementById("iurl");if(iu){iu.oninput=e=>{state.url=e.target.value};iu.onkeydown=e=>{if(e.key==="Enter"&&state.url.trim())runURL()}}
+document.getElementById("scat").onchange=e=>{state.cat=e.target.value};
+document.getElementById("slen").onchange=e=>{state.length=e.target.value};
+document.getElementById("rtone").oninput=e=>{state.tone=parseInt(e.target.value);document.querySelector('.lbl:last-of-type')||render()};
+document.getElementById("bdisc").onclick=runDiscover;
+document.getElementById("btop").onclick=runTopic;
+document.getElementById("burl").onclick=runURL;
+document.querySelectorAll("[data-idea]").forEach(c=>{if(c.classList.contains("ck"))c.onclick=()=>pick(parseInt(c.dataset.idea))});
+const fh=document.getElementById("f-h");if(fh&&state.result)fh.dataset.copy=state.result.html;
+}
+render();
+</script>
+</body>
+</html>
